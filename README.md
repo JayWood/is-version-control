@@ -33,7 +33,7 @@ function test( $themes ) {
 	$themes[] = 'twentyfifteen';
 	return $themes;
 }
-//add_filter( 'ivc_themes', 'test' );
+add_filter( 'ivc_themes', 'test' );
 ```
 
 ### ivc_message_string
@@ -53,4 +53,4 @@ add_filter( 'ivc_message_string', 'overwrite_message', 10, 3 );
 ```
 
 ## Screenshots
-![Is Version Control](https://raw.githubusercontent.com/JayWood/is-version-control/screenshot.png)
+![Is Version Control](https://raw.githubusercontent.com/JayWood/is-version-control/master/screenshot.png)
