@@ -1,3 +1,5 @@
+# WordPress Plugin - Is Version Controlled
+
 **Plugin Name:** Is Version Controlled   
 **Plugin URI:** http://www.plugish.com/      
 **Author:** Jerry Wood Jr.   
@@ -49,3 +51,6 @@ function overwrite_message( $message, $plugin_file, $plugin_data ) {
 }
 add_filter( 'ivc_message_string', 'overwrite_message', 10, 3 );
 ```
+
+## Screenshots
+![Is Version Control](https://raw.githubusercontent.com/JayWood/is-version-control/screenshot.png)
