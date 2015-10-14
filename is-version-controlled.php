@@ -43,6 +43,72 @@ class Is_Version_Controlled {
 		add_filter( 'http_request_args', array( $this, 'stop_updates' ), 10, 2 );
 		add_filter( 'plugin_row_meta', array( $this, 'version_control_text' ), 10, 3 );
 		add_action( 'admin_init', array( $this, 'remove_update_row' ) );
+		add_action( 'admin_init', array( $this, 'override_update_row' ) );
+	}
+
+	/**
+	 * Overrides update text for public VC'd plugins if update is available
+	 */
+	public function override_update_row() {
+		$plugins = $this->get_plugins();
+		if ( ! empty( $plugins ) ) {
+			foreach ( $plugins as $plugin_file ) {
+				remove_action( "after_plugin_row_{$plugin_file}", 'wp_plugin_update_row', 10 );
+				add_action( "after_plugin_row_{$plugin_file}", array( $this, 'add_version_text' ) );
+			}
+		}
+	}
+
+	/**
+	 * Overrides version text for plugin updates
+	 *
+	 * The majority of this function IS core, but has been cleaned up.
+	 *
+	 * @see wc_plugin_update_row()
+	 * @param $file
+	 * @param $plugin_data
+	 *
+	 * @return bool
+	 */
+	public function add_version_text( $file, $plugin_data ) {
+
+		$current = get_site_transient( 'update_plugins' );
+		if ( ! isset( $current->response[ $file ] ) ) {
+			return;
+		}
+
+		$r = $current->response[ $file ];
+
+		$plugins_allowedtags = array(
+			'a'       => array( 'href' => array(), 'title' => array() ),
+			'abbr'    => array( 'title' => array() ),
+			'acronym' => array( 'title' => array() ),
+			'code'    => array(),
+			'em'      => array(),
+			'strong'  => array(),
+		);
+
+		$plugin_name         = wp_kses( $plugin_data['Name'], $plugins_allowedtags );
+
+		$details_url = self_admin_url( 'plugin-install.php?tab=plugin-information&plugin=' . $r->slug . '&section=changelog&TB_iframe=true&width=600&height=800' );
+
+		$wp_list_table = _get_list_table( 'WP_Plugins_List_Table' );
+
+		if ( is_network_admin() || ! is_multisite() ) {
+			if ( is_network_admin() ) {
+				$active_class = is_plugin_active_for_network( $file ) ? ' active' : '';
+			} else {
+				$active_class = is_plugin_active( $file ) ? ' active' : '';
+			}
+
+			echo '<tr class="plugin-update-tr' . $active_class . '" id="' . esc_attr( $r->slug . '-update' ) . '" data-slug="' . esc_attr( $r->slug ) . '" data-plugin="' . esc_attr( $file ) . '"><td colspan="' . esc_attr( $wp_list_table->get_column_count() ) . '" class="plugin-update colspanchange"><div class="update-message">';
+
+			printf( __( 'There is a new version of %1$s available. <a href="%2$s" class="thickbox" title="%3$s">View version %4$s details</a>.' ), $plugin_name, esc_url( $details_url ), esc_attr( $plugin_name ), $r->new_version );
+
+			do_action( "in_plugin_update_message-{$file}", $plugin_data, $r );
+
+			echo '</div></td></tr>';
+		}
 	}
 
 	/**
@@ -178,7 +244,7 @@ class Is_Version_Controlled {
 	 */
 	private function remove_themes( $request ) {
 
-		$themes  = $this->get_themes( 'themes' );
+		$themes  = $this->get_themes( 'private' );
 		$themes_checked = $this->get_theme_data( $request );
 		if ( ! $themes_checked || empty( $themes ) || ! is_array( $themes ) ) {
 			return $request;
