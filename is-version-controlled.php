@@ -53,8 +53,9 @@ class Is_Version_Controlled {
 	 * @since 0.1.1
 	 * @return mixed|void
 	 */
-	public function get_plugins() {
-		return apply_filters( 'ivc_plugins', array() );
+	public function get_plugins( $private = false ) {
+		$private = $private ? 'private_' : false;
+		return apply_filters( "ivc_{$private}plugins", array() );
 	}
 
 	/**
@@ -65,27 +66,43 @@ class Is_Version_Controlled {
 	 * @since 0.1.1
 	 * @return mixed|void
 	 */
-	public function get_themes() {
-		return apply_filters( 'ivc_themes', array() );
+	public function get_themes( $private = false ) {
+		$private = $private ? 'private_' : false;
+		return apply_filters( "ivc_{$private}themes", array() );
 	}
 
 	/**
 	 * Removes the 'update' row notification
 	 *
-	 * Wordpress stores the per-row notifications in a 'update_plugins' transient, so if someone
-	 * activates this plugin and there are already plugins that need updated, site owners will still
-	 * be able to see that.  This filter takes care of that issue.
+	 * Removes this from private plugins only, which use the ivc_private_plugins filter
 	 */
 	public function remove_update_row() {
-		$plugins = $this->get_plugins();
+		$plugins = $this->get_plugins( 'private' );
 		foreach ( $plugins as $plugin_file ) {
 			remove_action( "after_plugin_row_$plugin_file", 'wp_plugin_update_row', 10 );
 		}
 	}
 
+	/**
+	 * Changes the version control text for specific plugin files
+	 *
+	 * @param array $plugin_meta
+	 * @param string $plugin_file
+	 * @param array $plugin_data
+	 *
+	 * @return array|int
+	 */
 	public function version_control_text( $plugin_meta = array(), $plugin_file = '', $plugin_data = array() ) {
 
-		$plugins = $this->get_plugins();
+		// Grab both private, and non-private plugins
+		$private_plugins = $this->get_plugins( 'private' );
+		$vc_plugins = $this->get_plugins();
+
+		// Merge both arrays
+		$plugins = array_merge( $private_plugins, $vc_plugins );
+		// Make sure nothing fancy is going on, no need for duplicates.
+		$plugins = array_unique( $plugins );
+
 		if ( empty( $plugins ) || ! is_array( $plugin_meta ) || ! in_array( $plugin_file, $plugins ) ) {
 			return $plugin_meta;
 		}
@@ -135,7 +152,7 @@ class Is_Version_Controlled {
 	 */
 	private function remove_plugins( $request ) {
 
-		$plugins = $this->get_plugins();
+		$plugins = $this->get_plugins( 'private' );
 		$plugins_checked = $this->get_plugin_data( $request );
 		if ( ! $plugins_checked || empty( $plugins ) || ! is_array( $plugins ) ) {
 			return $request;
@@ -161,7 +178,7 @@ class Is_Version_Controlled {
 	 */
 	private function remove_themes( $request ) {
 
-		$themes  = $this->get_themes();
+		$themes  = $this->get_themes( 'themes' );
 		$themes_checked = $this->get_theme_data( $request );
 		if ( ! $themes_checked || empty( $themes ) || ! is_array( $themes ) ) {
 			return $request;
