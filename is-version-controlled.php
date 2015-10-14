@@ -5,7 +5,7 @@ Plugin Name:	Is Version Controlled
 Plugin URI:		http://www.plugish.com/
 Description: 	If themes/plugins are version controlled, this plugin removes them from update checks if they are in the filter provided.
 Author: 		Jerry Wood Jr.
-Version:		0.1.0
+Version:		0.1.1
 Author URI:		http://plugish.com
 Text Domain:    is-version-controlled
 */
@@ -15,7 +15,7 @@ class Is_Version_Controlled {
 	/**
 	 * Current version number
 	 * @var   string
-	 * @since 1.5
+	 * @since 0.1.0
 	 */
 	const VERSION = '0.1.0';
 
@@ -46,6 +46,30 @@ class Is_Version_Controlled {
 	}
 
 	/**
+	 * Helper function to get plugin array
+	 *
+	 * Saves from typing apply_filters() all over the place
+	 *
+	 * @since 0.1.1
+	 * @return mixed|void
+	 */
+	public function get_plugins() {
+		return apply_filters( 'ivc_plugins', array() );
+	}
+
+	/**
+	 * Helper function to get theme array
+	 *
+	 * Sves from typing apply_filters() all over the place
+	 *
+	 * @since 0.1.1
+	 * @return mixed|void
+	 */
+	public function get_themes() {
+		return apply_filters( 'ivc_themes', array() );
+	}
+
+	/**
 	 * Removes the 'update' row notification
 	 *
 	 * Wordpress stores the per-row notifications in a 'update_plugins' transient, so if someone
@@ -53,7 +77,7 @@ class Is_Version_Controlled {
 	 * be able to see that.  This filter takes care of that issue.
 	 */
 	public function remove_update_row() {
-		$plugins = apply_filters( 'ivc_plugins', array() );
+		$plugins = $this->get_plugins();
 		foreach ( $plugins as $plugin_file ) {
 			remove_action( "after_plugin_row_$plugin_file", 'wp_plugin_update_row', 10 );
 		}
@@ -61,7 +85,7 @@ class Is_Version_Controlled {
 
 	public function version_control_text( $plugin_meta = array(), $plugin_file = '', $plugin_data = array() ) {
 
-		$plugins = apply_filters( 'ivc_plugins', array() );
+		$plugins = $this->get_plugins();
 		if ( empty( $plugins ) || ! is_array( $plugin_meta ) || ! in_array( $plugin_file, $plugins ) ) {
 			return $plugin_meta;
 		}
@@ -111,7 +135,7 @@ class Is_Version_Controlled {
 	 */
 	private function remove_plugins( $request ) {
 
-		$plugins = apply_filters( 'ivc_plugins', array() );
+		$plugins = $this->get_plugins();
 		$plugins_checked = $this->get_plugin_data( $request );
 		if ( ! $plugins_checked || empty( $plugins ) || ! is_array( $plugins ) ) {
 			return $request;
@@ -137,7 +161,7 @@ class Is_Version_Controlled {
 	 */
 	private function remove_themes( $request ) {
 
-		$themes  = apply_filters( 'ivc_themes', array() );
+		$themes  = $this->get_themes();
 		$themes_checked = $this->get_theme_data( $request );
 		if ( ! $themes_checked || empty( $themes ) || ! is_array( $themes ) ) {
 			return $request;
