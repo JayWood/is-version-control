@@ -152,6 +152,7 @@ class Is_Version_Controlled {
 	/**
 	 * Changes the version control text for specific plugin files
 	 *
+	 * @since 0.1.1
 	 * @param array $plugin_meta
 	 * @param string $plugin_file
 	 * @param array $plugin_data
