@@ -40,7 +40,7 @@ class Is_Version_Controlled {
 	 * @since 0.1.0
 	 */
 	public function hooks() {
-		add_filter( 'http_request_args', array( $this, 'stop_updates' ), 10, 2 );
+		add_filter( 'http_request_args', array( $this, 'prevent_wporg_send' ), 10, 2 );
 		add_filter( 'plugin_row_meta', array( $this, 'version_control_text' ), 10, 3 );
 		add_action( 'admin_init', array( $this, 'remove_update_row' ) );
 		add_action( 'admin_init', array( $this, 'override_update_row' ) );
@@ -65,6 +65,7 @@ class Is_Version_Controlled {
 	 * The majority of this function IS core, but has been cleaned up.
 	 *
 	 * @see wc_plugin_update_row()
+	 *
 	 * @param $file
 	 * @param $plugin_data
 	 *
@@ -88,7 +89,7 @@ class Is_Version_Controlled {
 			'strong'  => array(),
 		);
 
-		$plugin_name         = wp_kses( $plugin_data['Name'], $plugins_allowedtags );
+		$plugin_name = wp_kses( $plugin_data['Name'], $plugins_allowedtags );
 
 		$details_url = self_admin_url( 'plugin-install.php?tab=plugin-information&plugin=' . $r->slug . '&section=changelog&TB_iframe=true&width=600&height=800' );
 
@@ -121,6 +122,7 @@ class Is_Version_Controlled {
 	 */
 	public function get_plugins( $private = false ) {
 		$private = $private ? 'private_' : false;
+
 		return apply_filters( "ivc_{$private}plugins", array() );
 	}
 
@@ -134,6 +136,7 @@ class Is_Version_Controlled {
 	 */
 	public function get_themes( $private = false ) {
 		$private = $private ? 'private_' : false;
+
 		return apply_filters( "ivc_{$private}themes", array() );
 	}
 
@@ -153,9 +156,10 @@ class Is_Version_Controlled {
 	 * Changes the version control text for specific plugin files
 	 *
 	 * @since 0.1.1
-	 * @param array $plugin_meta
+	 *
+	 * @param array  $plugin_meta
 	 * @param string $plugin_file
-	 * @param array $plugin_data
+	 * @param array  $plugin_data
 	 *
 	 * @return array|int
 	 */
@@ -163,7 +167,7 @@ class Is_Version_Controlled {
 
 		// Grab both private, and non-private plugins
 		$private_plugins = $this->get_plugins( 'private' );
-		$vc_plugins = $this->get_plugins();
+		$vc_plugins      = $this->get_plugins();
 
 		// Merge both arrays
 		$plugins = array_merge( $private_plugins, $vc_plugins );
@@ -174,7 +178,7 @@ class Is_Version_Controlled {
 			return $plugin_meta;
 		}
 
-		$version_control_string = __( 'This plugin is under version control', 'is-version-controlled' );
+		$version_control_string   = __( 'This plugin is under version control', 'is-version-controlled' );
 		$is_under_version_control = apply_filters( 'ivc_message_string', sprintf( '<b>%s</b>', $version_control_string ), $plugin_file, $plugin_data );
 
 		if ( isset( $plugin_data['Version'] ) ) {
@@ -195,9 +199,12 @@ class Is_Version_Controlled {
 	}
 
 	/**
-	 * Stops updates for specific files
+	 * Prevents sending data to wp.org about the plugin
+	 *
+	 * By removing data from the request URL, this prevents
+	 * update checks for themes and plugins.
 	 */
-	public function stop_updates( $request, $url ) {
+	public function prevent_wporg_send( $request, $url ) {
 		if ( empty( $url ) ) {
 			return $request;
 		}
@@ -213,13 +220,14 @@ class Is_Version_Controlled {
 
 	/**
 	 * Removes plugins form the http request array.
+	 *
 	 * @param $request
 	 *
 	 * @return mixed
 	 */
 	private function remove_plugins( $request ) {
 
-		$plugins = $this->get_plugins( 'private' );
+		$plugins         = $this->get_plugins( 'private' );
 		$plugins_checked = $this->get_plugin_data( $request );
 		if ( ! $plugins_checked || empty( $plugins ) || ! is_array( $plugins ) ) {
 			return $request;
@@ -239,13 +247,14 @@ class Is_Version_Controlled {
 
 	/**
 	 * Removes themes from the http request array.
+	 *
 	 * @param $request
 	 *
 	 * @return mixed
 	 */
 	private function remove_themes( $request ) {
 
-		$themes  = $this->get_themes( 'private' );
+		$themes         = $this->get_themes( 'private' );
 		$themes_checked = $this->get_theme_data( $request );
 		if ( ! $themes_checked || empty( $themes ) || ! is_array( $themes ) ) {
 			return $request;
@@ -270,6 +279,7 @@ class Is_Version_Controlled {
 
 	/**
 	 * Grabs the decoded plugins data
+	 *
 	 * @param $request
 	 *
 	 * @return bool|object False on failure, plugins object otherwise
@@ -280,11 +290,13 @@ class Is_Version_Controlled {
 		}
 
 		$plugins = json_decode( $request['body']['plugins'], true );
+
 		return empty( $plugins ) ? false : $plugins;
 	}
 
 	/**
 	 * Grabs the decoded themes data
+	 *
 	 * @param $request
 	 *
 	 * @return bool|object False on failure, plugins object otherwise
@@ -295,11 +307,13 @@ class Is_Version_Controlled {
 		}
 
 		$themes = json_decode( $request['body']['themes'], true );
+
 		return empty( $themes ) ? false : $themes;
 	}
 
 	/**
 	 * Checks if the URL provided is to plugin updates
+	 *
 	 * @param $url
 	 *
 	 * @return bool
@@ -310,6 +324,7 @@ class Is_Version_Controlled {
 
 	/**
 	 * Checks if the URL is to theme updates.
+	 *
 	 * @param $url
 	 *
 	 * @return bool
@@ -340,11 +355,15 @@ is_version_controlled()->hooks();
 
 /**
  * Overwrites the default message for Version Control
- * @param string $message The Default Message
+ *
+ * @param string $message     The Default Message
  * @param string $plugin_file The filepath to the plugin, ie. akismet/akismet.php
- * @param array $plugin_data Plugin data array, such as version, name, etc....
+ * @param array  $plugin_data Plugin data array, such as version, name, etc....
+ *
+ * @return string
  */
 function overwrite_message( $message, $plugin_file, $plugin_data ) {
 	return 'Do not touch my plugin!';
 }
+
 add_filter( 'ivc_message_string', 'overwrite_message', 10, 3 );
