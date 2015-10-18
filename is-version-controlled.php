@@ -52,6 +52,8 @@ class Is_Version_Controlled {
 
 	/**
 	 * Overrides the site transient to remove plugins from the update table.
+	 *
+	 * @since 0.1.1
 	 * @param $transient
 	 *
 	 * @return mixed
@@ -88,6 +90,8 @@ class Is_Version_Controlled {
 	/**
 	 * Filters the "Update Plugin" button from the popover.
 	 *
+	 * @since 0.1.1
+	 *
 	 * @param $result
 	 * @param $action
 	 * @param $args
@@ -100,7 +104,7 @@ class Is_Version_Controlled {
 		}
 
 		$plugins = $this->get_plugins();
-		$file    = $this->get_file_by_slug( $args->slug );
+		$file    = $this->get_plugin_path_by_slug( $args->slug );
 		if ( in_array( $file, $plugins ) ) {
 			// If this is our plugin, we make sure to remove the download link.
 			unset( $result->download_link );
@@ -112,11 +116,12 @@ class Is_Version_Controlled {
 	/**
 	 * Grabs the file path of a plugin by its slug.
 	 *
+	 * @since 0.1.1
 	 * @param $slug
 	 *
 	 * @return bool|string
 	 */
-	private function get_file_by_slug( $slug ) {
+	private function get_plugin_path_by_slug( $slug ) {
 		$api     = get_site_transient( 'update_plugins' );
 		$plugins = $api->no_update;
 		if ( isset( $api->response ) ) {
@@ -138,6 +143,8 @@ class Is_Version_Controlled {
 
 	/**
 	 * Overrides update text for public VC'd plugins if update is available
+	 *
+	 * @since 0.1.0
 	 */
 	public function override_update_row() {
 		$plugins = $this->get_plugins();
@@ -156,6 +163,7 @@ class Is_Version_Controlled {
 	 *
 	 * @see wp_plugin_update_row()
 	 *
+	 * @since 0.1.0
 	 * @param $file
 	 * @param $plugin_data
 	 *
@@ -234,6 +242,8 @@ class Is_Version_Controlled {
 	 * Removes the 'update' row notification
 	 *
 	 * Removes this from private plugins only, which use the ivc_private_plugins filter
+	 *
+	 * @since 0.1.0
 	 */
 	public function remove_update_row() {
 		$plugins = $this->get_plugins( 'private' );
@@ -293,6 +303,8 @@ class Is_Version_Controlled {
 	 *
 	 * By removing data from the request URL, this prevents
 	 * update checks for themes and plugins.
+	 *
+	 * @since 0.1.0
 	 */
 	public function prevent_wporg_send( $request, $url ) {
 		if ( empty( $url ) ) {
@@ -311,6 +323,7 @@ class Is_Version_Controlled {
 	/**
 	 * Removes plugins form the http request array.
 	 *
+	 * @since 0.1.0
 	 * @param $request
 	 *
 	 * @return mixed
@@ -338,6 +351,7 @@ class Is_Version_Controlled {
 	/**
 	 * Removes themes from the http request array.
 	 *
+	 * @since 0.1.0
 	 * @param $request
 	 *
 	 * @return mixed
@@ -370,6 +384,7 @@ class Is_Version_Controlled {
 	/**
 	 * Grabs the decoded plugins data
 	 *
+	 * @since 0.1.0
 	 * @param $request
 	 *
 	 * @return bool|object False on failure, plugins object otherwise
@@ -387,6 +402,7 @@ class Is_Version_Controlled {
 	/**
 	 * Grabs the decoded themes data
 	 *
+	 * @since 0.1.0
 	 * @param $request
 	 *
 	 * @return bool|object False on failure, plugins object otherwise
@@ -404,6 +420,7 @@ class Is_Version_Controlled {
 	/**
 	 * Checks if the URL provided is to plugin updates
 	 *
+	 * @since 0.1.0
 	 * @param $url
 	 *
 	 * @return bool
@@ -415,6 +432,7 @@ class Is_Version_Controlled {
 	/**
 	 * Checks if the URL is to theme updates.
 	 *
+	 * @since 0.1.0
 	 * @param $url
 	 *
 	 * @return bool
@@ -425,6 +443,7 @@ class Is_Version_Controlled {
 
 	/**
 	 * Creates or returns an instance of this class.
+	 *
 	 * @since  0.1.0
 	 * @return Is_Version_Controlled A single instance of this class.
 	 */
