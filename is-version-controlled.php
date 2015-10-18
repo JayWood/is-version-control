@@ -40,10 +40,12 @@ class Is_Version_Controlled {
 	 * @since 0.1.0
 	 */
 	public function hooks() {
-		add_filter( 'http_request_args', array( $this, 'prevent_wporg_send' ), 10, 2 );
-		add_filter( 'plugin_row_meta', array( $this, 'version_control_text' ), 10, 3 );
+
 		add_action( 'admin_init', array( $this, 'remove_update_row' ), 10 );
 		add_action( 'admin_init', array( $this, 'override_update_row' ), 11 );
+
+		add_filter( 'http_request_args', array( $this, 'prevent_wporg_send' ), 10, 2 );
+		add_filter( 'plugin_row_meta', array( $this, 'version_control_text' ), 10, 3 );
 		add_filter( 'plugins_api_result', array( $this, 'plugin_api_result_filter' ), 10, 3 );
 		add_filter( 'site_transient_update_plugins', array( $this, 'override_site_transient' ) );
 	}
