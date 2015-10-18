@@ -45,6 +45,42 @@ class Is_Version_Controlled {
 		add_action( 'admin_init', array( $this, 'remove_update_row' ), 10 );
 		add_action( 'admin_init', array( $this, 'override_update_row' ), 11 );
 		add_filter( 'plugins_api_result', array( $this, 'plugin_api_result_filter' ), 10, 3 );
+		add_filter( 'site_transient_update_plugins', array( $this, 'override_site_transient' ) );
+	}
+
+	/**
+	 * Overrides the site transient to remove plugins from the update table.
+	 * @param $transient
+	 *
+	 * @return mixed
+	 */
+	public function override_site_transient( $transient ) {
+		$screen = get_current_screen();
+		if ( ! isset( $screen->base ) || 'update-core' !== $screen->base || ! isset( $transient->response ) ) {
+			return $transient;
+		}
+
+		$private_plugins = $this->get_plugins( 'private' );
+		$plugins = $this->get_plugins();
+		if ( ! empty( $private_plugins ) ) {
+			$plugins = array_merge( $private_plugins, $plugins );
+
+		}
+
+		$response = $transient->response;
+		foreach ( $response as $file_path => $plugin_data ) {
+			if ( in_array( $file_path, $plugins ) ) {
+				unset( $response[ $file_path ] );
+			}
+		}
+
+		// Now re-assign transient data
+		$transient->response = $response;
+
+		error_log( print_r( $transient, 1 ) );
+
+
+		return $transient;
 	}
 
 	/**
