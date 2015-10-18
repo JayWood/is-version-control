@@ -44,6 +44,58 @@ class Is_Version_Controlled {
 		add_filter( 'plugin_row_meta', array( $this, 'version_control_text' ), 10, 3 );
 		add_action( 'admin_init', array( $this, 'remove_update_row' ), 10 );
 		add_action( 'admin_init', array( $this, 'override_update_row' ), 11 );
+		add_filter( 'plugins_api_result', array( $this, 'plugin_api_result_filter' ), 10, 3 );
+	}
+
+	/**
+	 * Filters the "Update Plugin" button from the popover.
+	 *
+	 * @param $result
+	 * @param $action
+	 * @param $args
+	 *
+	 * @return mixed
+	 */
+	public function plugin_api_result_filter( $result, $action, $args ) {
+		if ( ! isset( $args->slug ) ) {
+			return $result;
+		}
+
+		$plugins = $this->get_plugins();
+		$file    = $this->get_file_by_slug( $args->slug );
+		if ( in_array( $file, $plugins ) ) {
+			// If this is our plugin, we make sure to remove the download link.
+			unset( $result->download_link );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Grabs the file path of a plugin by its slug.
+	 *
+	 * @param $slug
+	 *
+	 * @return bool|string
+	 */
+	private function get_file_by_slug( $slug ) {
+		$api     = get_site_transient( 'update_plugins' );
+		$plugins = $api->no_update;
+		if ( isset( $api->response ) ) {
+			$plugins = array_merge( $api->response, $plugins );
+		}
+
+		foreach ( $plugins as $file_path => $data ) {
+			if ( ! isset( $data->slug ) ) {
+				continue;
+			}
+
+			if ( $slug === $data->slug ) {
+				return $file_path;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -88,7 +140,7 @@ class Is_Version_Controlled {
 			'em'      => array(),
 			'strong'  => array(),
 		);
-		
+
 		$plugin_name = wp_kses( $plugin_data['Name'], $plugins_allowedtags );
 
 		$details_url = self_admin_url( 'plugin-install.php?tab=plugin-information&plugin=' . $r->slug . '&section=changelog&TB_iframe=true&width=600&height=800' );
@@ -157,9 +209,9 @@ class Is_Version_Controlled {
 	 *
 	 * @since 0.1.1
 	 *
-	 * @param array  $plugin_meta
+	 * @param array $plugin_meta
 	 * @param string $plugin_file
-	 * @param array  $plugin_data
+	 * @param array $plugin_data
 	 *
 	 * @return array|int
 	 */
@@ -356,9 +408,9 @@ is_version_controlled()->hooks();
 /**
  * Overwrites the default message for Version Control
  *
- * @param string $message     The Default Message
+ * @param string $message The Default Message
  * @param string $plugin_file The filepath to the plugin, ie. akismet/akismet.php
- * @param array  $plugin_data Plugin data array, such as version, name, etc....
+ * @param array $plugin_data Plugin data array, such as version, name, etc....
  *
  * @return string
  */
@@ -370,6 +422,8 @@ add_filter( 'ivc_message_string', 'overwrite_message', 10, 3 );
 
 function remove_akismet( $filters ) {
 	$filters[] = 'akismet/akismet.php';
+
 	return $filters;
 }
+
 add_filter( 'ivc_plugins', 'remove_akismet' );
