@@ -42,8 +42,8 @@ class Is_Version_Controlled {
 	public function hooks() {
 		add_filter( 'http_request_args', array( $this, 'prevent_wporg_send' ), 10, 2 );
 		add_filter( 'plugin_row_meta', array( $this, 'version_control_text' ), 10, 3 );
-		add_action( 'admin_init', array( $this, 'remove_update_row' ) );
-		add_action( 'admin_init', array( $this, 'override_update_row' ) );
+		add_action( 'admin_init', array( $this, 'remove_update_row' ), 10 );
+		add_action( 'admin_init', array( $this, 'override_update_row' ), 11 );
 	}
 
 	/**
@@ -54,7 +54,7 @@ class Is_Version_Controlled {
 		if ( ! empty( $plugins ) ) {
 			foreach ( $plugins as $plugin_file ) {
 				remove_action( "after_plugin_row_{$plugin_file}", 'wp_plugin_update_row', 10 );
-				add_action( "after_plugin_row_{$plugin_file}", array( $this, 'add_version_text' ) );
+				add_action( "after_plugin_row_{$plugin_file}", array( $this, 'add_version_text' ), 10, 2 );
 			}
 		}
 	}
@@ -64,7 +64,7 @@ class Is_Version_Controlled {
 	 *
 	 * The majority of this function IS core, but has been cleaned up.
 	 *
-	 * @see wc_plugin_update_row()
+	 * @see wp_plugin_update_row()
 	 *
 	 * @param $file
 	 * @param $plugin_data
@@ -88,7 +88,7 @@ class Is_Version_Controlled {
 			'em'      => array(),
 			'strong'  => array(),
 		);
-
+		
 		$plugin_name = wp_kses( $plugin_data['Name'], $plugins_allowedtags );
 
 		$details_url = self_admin_url( 'plugin-install.php?tab=plugin-information&plugin=' . $r->slug . '&section=changelog&TB_iframe=true&width=600&height=800' );
@@ -367,3 +367,9 @@ function overwrite_message( $message, $plugin_file, $plugin_data ) {
 }
 
 add_filter( 'ivc_message_string', 'overwrite_message', 10, 3 );
+
+function remove_akismet( $filters ) {
+	$filters[] = 'akismet/akismet.php';
+	return $filters;
+}
+add_filter( 'ivc_plugins', 'remove_akismet' );
