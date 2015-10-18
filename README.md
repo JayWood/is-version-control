@@ -3,7 +3,7 @@
 **Plugin Name:** Is Version Controlled   
 **Plugin URI:** http://www.plugish.com/      
 **Author:** Jerry Wood Jr.   
-**Version:** 0.1.0   
+**Version:** 0.1.1   
 **Author URI:**	http://plugish.com      
 
 This is a WordPress plugin designed for developers and agencies that just hate those calls of "Oops I updated the plugin" which we all know too well.
@@ -54,3 +54,13 @@ add_filter( 'ivc_message_string', 'overwrite_message', 10, 3 );
 
 ## Screenshots
 ![Is Version Control](https://raw.githubusercontent.com/JayWood/is-version-control/master/screenshot.png)
+
+## Changelog
+
+### 0.1.1
+* Removes the Plugin Update button from the popover
+* Two new filters `ivc_private_themes` and `ivc_private_plugins` to prevent plugins from contacting wp.org altogether.
+* Bring back the update toolbar if non-private plugin
+
+### 0.1.0
+* Initial upload

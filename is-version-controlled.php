@@ -418,7 +418,7 @@ function overwrite_message( $message, $plugin_file, $plugin_data ) {
 	return 'Do not touch my plugin!';
 }
 
-add_filter( 'ivc_message_string', 'overwrite_message', 10, 3 );
+//add_filter( 'ivc_message_string', 'overwrite_message', 10, 3 );
 
 function remove_akismet( $filters ) {
 	$filters[] = 'akismet/akismet.php';
