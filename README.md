@@ -62,6 +62,7 @@ add_filter( 'ivc_message_string', 'overwrite_message', 10, 3 );
 * Two new filters `ivc_private_themes` and `ivc_private_plugins` to prevent plugins from contacting wp.org altogether.
 * Bring back the update toolbar if non-private plugin
 * Update filters to remove plugin updates from update-core screen
+* A few method name changes, more logical naming convention
 
 ### 0.1.0
 * Initial upload

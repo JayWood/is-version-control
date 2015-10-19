@@ -148,7 +148,7 @@ class Is_Version_Controlled {
 		if ( ! empty( $plugins ) ) {
 			foreach ( $plugins as $plugin_file ) {
 				remove_action( "after_plugin_row_{$plugin_file}", 'wp_plugin_update_row', 10 );
-				add_action( "after_plugin_row_{$plugin_file}", array( $this, 'add_version_text' ), 10, 2 );
+				add_action( "after_plugin_row_{$plugin_file}", array( $this, 'override_plugin_version_text' ), 10, 2 );
 			}
 		}
 	}
@@ -166,7 +166,7 @@ class Is_Version_Controlled {
 	 *
 	 * @return bool
 	 */
-	public function add_version_text( $file, $plugin_data ) {
+	public function override_plugin_version_text( $file, $plugin_data ) {
 
 		$current = get_site_transient( 'update_plugins' );
 		if ( ! isset( $current->response[ $file ] ) ) {
