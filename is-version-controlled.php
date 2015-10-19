@@ -222,12 +222,11 @@ class Is_Version_Controlled {
 			$details_url    = add_query_arg( array(
 				'TB_iframe' => 'true',
 				'width'     => 1024,
-				'height'    => 800
+				'height'    => 800,
 			), $update['url'] ); //Theme browser inside WP? replace this, Also, theme preview JS will override this on the available list.
 
 			if ( ! is_multisite() ) {
-				$html = sprintf( '<p><strong>' . __( 'There is a new version of %1$s available. <a href="%2$s" class="thickbox" title="%3$s">View version %4$s details</a>.' ) . '</strong></p>',
-					$theme_name, esc_url( $details_url ), esc_attr( $theme['Name'] ), $update['new_version'] );
+				$html = sprintf( '<p><strong>' . __( 'There is a new version of %1$s available. <a href="%2$s" class="thickbox" title="%3$s">View version %4$s details</a>.' ) . '</strong></p>', $theme_name, esc_url( $details_url ), esc_attr( $theme['Name'] ), $update['new_version'] );
 			}
 		}
 
