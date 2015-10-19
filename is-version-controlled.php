@@ -46,7 +46,7 @@ class Is_Version_Controlled {
 
 		add_filter( 'http_request_args', array( $this, 'prevent_wporg_send' ), 10, 2 );
 		add_filter( 'plugin_row_meta', array( $this, 'version_control_text' ), 10, 3 );
-		add_filter( 'plugins_api_result', array( $this, 'plugin_api_result_filter' ), 10, 3 );
+		add_filter( 'plugins_api_result', array( $this, 'remove_plugin_update_button' ), 10, 3 );
 		add_filter( 'site_transient_update_plugins', array( $this, 'override_site_transient' ) );
 	}
 
@@ -81,9 +81,6 @@ class Is_Version_Controlled {
 		// Now re-assign transient data
 		$transient->response = $response;
 
-		error_log( print_r( $transient, 1 ) );
-
-
 		return $transient;
 	}
 
@@ -98,7 +95,7 @@ class Is_Version_Controlled {
 	 *
 	 * @return mixed
 	 */
-	public function plugin_api_result_filter( $result, $action, $args ) {
+	public function remove_plugin_update_button( $result, $action, $args ) {
 		if ( ! isset( $args->slug ) ) {
 			return $result;
 		}
