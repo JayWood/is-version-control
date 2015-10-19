@@ -45,9 +45,9 @@ class Is_Version_Controlled {
 		add_action( 'admin_init', array( $this, 'override_update_row' ), 11 );
 
 		add_filter( 'http_request_args', array( $this, 'prevent_wporg_send' ), 10, 2 );
-		add_filter( 'plugin_row_meta', array( $this, 'version_control_text' ), 10, 3 );
+		add_filter( 'plugin_row_meta', array( $this, 'override_plugin_version_text' ), 10, 3 );
 		add_filter( 'plugins_api_result', array( $this, 'remove_plugin_update_button' ), 10, 3 );
-		add_filter( 'site_transient_update_plugins', array( $this, 'override_site_transient' ) );
+		add_filter( 'site_transient_update_plugins', array( $this, 'remove_plugins_from_transient' ) );
 	}
 
 	/**
@@ -58,7 +58,7 @@ class Is_Version_Controlled {
 	 *
 	 * @return mixed
 	 */
-	public function override_site_transient( $transient ) {
+	public function remove_plugins_from_transient( $transient ) {
 		$screen = get_current_screen();
 		if ( ! isset( $screen->base ) || 'update-core' !== $screen->base || ! isset( $transient->response ) ) {
 			return $transient;
@@ -260,7 +260,7 @@ class Is_Version_Controlled {
 	 *
 	 * @return array|int
 	 */
-	public function version_control_text( $plugin_meta = array(), $plugin_file = '', $plugin_data = array() ) {
+	public function override_plugin_version_text( $plugin_meta = array(), $plugin_file = '', $plugin_data = array() ) {
 
 		// Grab both private, and non-private plugins
 		$private_plugins = $this->get_plugins( 'private' );
