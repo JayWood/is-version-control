@@ -63,6 +63,8 @@ add_filter( 'ivc_message_string', 'overwrite_message', 10, 3 );
 * Bring back the update toolbar if non-private plugin
 * Update filters to remove plugin updates from update-core screen
 * A few method name changes, more logical naming convention
+* Override update message for themes
+* Remove update message from update-core screen
 
 ### 0.1.0
 * Initial upload
