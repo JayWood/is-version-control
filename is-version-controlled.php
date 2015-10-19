@@ -166,7 +166,7 @@ class Is_Version_Controlled {
 	 *
 	 * @return bool
 	 */
-	public function override_plugin_row_meta( $file, $plugin_data ) {
+	public function override_plugin_version_text( $file, $plugin_data ) {
 
 		$current = get_site_transient( 'update_plugins' );
 		if ( ! isset( $current->response[ $file ] ) ) {
@@ -260,7 +260,7 @@ class Is_Version_Controlled {
 	 *
 	 * @return array|int
 	 */
-	public function override_plugin_version_text( $plugin_meta = array(), $plugin_file = '', $plugin_data = array() ) {
+	public function override_plugin_row_meta( $plugin_meta = array(), $plugin_file = '', $plugin_data = array() ) {
 
 		// Grab both private, and non-private plugins
 		$private_plugins = $this->get_plugins( 'private' );
