@@ -45,7 +45,7 @@ class Is_Version_Controlled {
 		add_action( 'admin_init', array( $this, 'override_update_row' ), 11 );
 
 		add_filter( 'http_request_args', array( $this, 'prevent_wporg_send' ), 10, 2 );
-		add_filter( 'plugin_row_meta', array( $this, 'override_plugin_version_text' ), 10, 3 );
+		add_filter( 'plugin_row_meta', array( $this, 'override_plugin_row_meta' ), 10, 3 );
 		add_filter( 'plugins_api_result', array( $this, 'remove_plugin_update_button' ), 10, 3 );
 		add_filter( 'site_transient_update_plugins', array( $this, 'remove_plugins_from_transient' ) );
 	}
@@ -166,7 +166,7 @@ class Is_Version_Controlled {
 	 *
 	 * @return bool
 	 */
-	public function override_plugin_version_text( $file, $plugin_data ) {
+	public function override_plugin_row_meta( $file, $plugin_data ) {
 
 		$current = get_site_transient( 'update_plugins' );
 		if ( ! isset( $current->response[ $file ] ) ) {
