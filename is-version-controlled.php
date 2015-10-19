@@ -148,9 +148,46 @@ class Is_Version_Controlled {
 		if ( ! empty( $plugins ) ) {
 			foreach ( $plugins as $plugin_file ) {
 				remove_action( "after_plugin_row_{$plugin_file}", 'wp_plugin_update_row', 10 );
-				add_action( "after_plugin_row_{$plugin_file}", array( $this, 'override_plugin_version_text' ), 10, 2 );
+				add_action( "after_plugin_row_{$plugin_file}", array( $this, 'override_plugin_update_notification_row' ), 10, 2 );
 			}
 		}
+
+		$themes = $this->get_themes();
+		if ( ! empty( $themes ) ) {
+			foreach ( $themes as $theme ) {
+				remove_action( "after_theme_row_{$theme}", 'wp_theme_update_row', 10 );
+				add_action( "after_theme_row_{$theme}", array( $this, 'override_theme_update_notification_row' ), 10, 2 );
+			}
+		}
+	}
+
+	/**
+	 * Overrides Theme update notification bar
+	 *
+	 * The majority of this method IS core, it's just been cleaned up
+	 *
+	 * @param $theme_key
+	 * @param $theme
+	 */
+	public function override_theme_update_notification_row( $theme_key, $theme ) {
+		$current = get_site_transient( 'update_themes' );
+		if ( ! isset( $current->response[ $theme_key ] ) ) {
+			return;
+		}
+		$r = $current->response[ $theme_key ];
+
+		$details_url = add_query_arg( array(
+			'TB_iframe' => 'true',
+			'width'     => 1024,
+			'height'    => 800,
+		), $current->response[ $theme_key ]['url'] );
+
+		$wp_list_table = _get_list_table( 'WP_MS_Themes_List_Table' );
+
+		echo '<tr class="plugin-update-tr"><td colspan="' . $wp_list_table->get_column_count() . '" class="plugin-update colspanchange"><div class="update-message">';
+		printf( __( 'There is a new version of %1$s available. <a href="%2$s" class="thickbox" title="%3$s">View version %4$s details</a>.' ), $theme['Name'], esc_url( $details_url ), esc_attr( $theme['Name'] ), $r->new_version );
+		do_action( "in_theme_update_message-{$theme_key}", $theme, $r );
+		echo '</div></td></tr>';
 	}
 
 	/**
@@ -166,7 +203,7 @@ class Is_Version_Controlled {
 	 *
 	 * @return bool
 	 */
-	public function override_plugin_version_text( $file, $plugin_data ) {
+	public function override_plugin_update_notification_row( $file, $plugin_data ) {
 
 		$current = get_site_transient( 'update_plugins' );
 		if ( ! isset( $current->response[ $file ] ) ) {
@@ -218,7 +255,8 @@ class Is_Version_Controlled {
 	public function get_plugins( $private = false ) {
 		$private = $private ? 'private_' : false;
 
-		return apply_filters( "ivc_{$private}plugins", array() );
+		$plugins = apply_filters( "ivc_{$private}plugins", array() );
+		return array_unique( $plugins );
 	}
 
 	/**
@@ -232,7 +270,8 @@ class Is_Version_Controlled {
 	public function get_themes( $private = false ) {
 		$private = $private ? 'private_' : false;
 
-		return apply_filters( "ivc_{$private}themes", array() );
+		$themes = apply_filters( "ivc_{$private}themes", array() );
+		return array_unique( $themes ); // No duplicates
 	}
 
 	/**
@@ -476,8 +515,13 @@ function overwrite_message( $message, $plugin_file, $plugin_data ) {
 
 function remove_akismet( $filters ) {
 	$filters[] = 'akismet/akismet.php';
-
 	return $filters;
 }
 
-add_filter( 'ivc_plugins', 'remove_akismet' );
+//add_filter( 'ivc_plugins', 'remove_akismet' );
+
+function remove_twentyfifteen( $filters ) {
+	$filters[] = 'twentyfifteen';
+	return $filters;
+}
+add_filter( 'ivc_themes', 'remove_twentyfifteen' );
