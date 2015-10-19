@@ -47,6 +47,7 @@ class Is_Version_Controlled {
 		add_filter( 'http_request_args', array( $this, 'prevent_wporg_send' ), 10, 2 );
 		add_filter( 'plugin_row_meta', array( $this, 'override_plugin_row_meta' ), 10, 3 );
 		add_filter( 'plugins_api_result', array( $this, 'remove_plugin_update_button' ), 10, 3 );
+		add_filter( 'wp_prepare_themes_for_js', array( $this, 'override_theme_update_notification' ) );
 		add_filter( 'site_transient_update_plugins', array( $this, 'remove_plugins_from_transient' ) );
 	}
 
@@ -160,6 +161,36 @@ class Is_Version_Controlled {
 			}
 		}
 	}
+
+	/**
+	 * Overrides the localized data before it's sent to the backbone script
+	 *
+	 * @param $themes
+	 *
+	 * @return mixed
+	 */
+	public function override_theme_update_notification( $themes ) {
+		if ( empty( $themes ) ) {
+			return $themes;
+		}
+
+		$our_themes = $this->get_themes();
+		foreach ( $themes as $slug => $theme_data ) {
+			if ( in_array( $slug, $our_themes ) ) {
+				// The theme is ivc
+				if ( isset( $theme_data['update'] ) && ! empty( $theme_data['update'] ) ) {
+					$themes[ $slug ]['update'] = $this->get_theme_update_msg();
+				}
+			}
+		}
+
+		return $themes;
+	}
+
+	protected function get_theme_update_msg() {
+		return '';
+	}
+
 
 	/**
 	 * Overrides Theme update notification bar
@@ -517,8 +548,7 @@ function remove_akismet( $filters ) {
 	$filters[] = 'akismet/akismet.php';
 	return $filters;
 }
-
-//add_filter( 'ivc_plugins', 'remove_akismet' );
+add_filter( 'ivc_plugins', 'remove_akismet' );
 
 function remove_twentyfifteen( $filters ) {
 	$filters[] = 'twentyfifteen';
