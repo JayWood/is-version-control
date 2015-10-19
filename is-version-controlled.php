@@ -55,6 +55,7 @@ class Is_Version_Controlled {
 	 * Overrides the site transient to remove plugins from the update table.
 	 *
 	 * @since 0.1.1
+	 *
 	 * @param $transient
 	 *
 	 * @return mixed
@@ -66,7 +67,7 @@ class Is_Version_Controlled {
 		}
 
 		$private_plugins = $this->get_plugins( 'private' );
-		$plugins = $this->get_plugins();
+		$plugins         = $this->get_plugins();
 		if ( ! empty( $private_plugins ) ) {
 			$plugins = array_merge( $private_plugins, $plugins );
 
@@ -115,6 +116,7 @@ class Is_Version_Controlled {
 	 * Grabs the file path of a plugin by its slug.
 	 *
 	 * @since 0.1.1
+	 *
 	 * @param $slug
 	 *
 	 * @return bool|string
@@ -149,7 +151,10 @@ class Is_Version_Controlled {
 		if ( ! empty( $plugins ) ) {
 			foreach ( $plugins as $plugin_file ) {
 				remove_action( "after_plugin_row_{$plugin_file}", 'wp_plugin_update_row', 10 );
-				add_action( "after_plugin_row_{$plugin_file}", array( $this, 'override_plugin_update_notification_row' ), 10, 2 );
+				add_action( "after_plugin_row_{$plugin_file}", array(
+					$this,
+					'override_plugin_update_notification_row'
+				), 10, 2 );
 			}
 		}
 
@@ -157,7 +162,10 @@ class Is_Version_Controlled {
 		if ( ! empty( $themes ) ) {
 			foreach ( $themes as $theme ) {
 				remove_action( "after_theme_row_{$theme}", 'wp_theme_update_row', 10 );
-				add_action( "after_theme_row_{$theme}", array( $this, 'override_theme_update_notification_row' ), 10, 2 );
+				add_action( "after_theme_row_{$theme}", array(
+					$this,
+					'override_theme_update_notification_row'
+				), 10, 2 );
 			}
 		}
 	}
@@ -179,7 +187,7 @@ class Is_Version_Controlled {
 			if ( in_array( $slug, $our_themes ) ) {
 				// The theme is ivc
 				if ( isset( $theme_data['update'] ) && ! empty( $theme_data['update'] ) ) {
-					$themes[ $slug ]['update'] = $this->get_theme_update_msg();
+					$themes[ $slug ]['update'] = $this->get_theme_update_msg( $slug );
 				}
 			}
 		}
@@ -187,8 +195,43 @@ class Is_Version_Controlled {
 		return $themes;
 	}
 
-	protected function get_theme_update_msg() {
-		return '';
+	protected function get_theme_update_msg( $theme ) {
+		static $themes_update = null;
+
+		$theme = wp_get_theme( $theme );
+
+		if ( ! current_user_can( 'update_themes' ) ) {
+			return false;
+		}
+
+		if ( ! isset( $themes_update ) ) {
+			$themes_update = get_site_transient( 'update_themes' );
+		}
+
+		if ( ! ( $theme instanceof WP_Theme ) ) {
+			return false;
+		}
+
+		$stylesheet = $theme->get_stylesheet();
+
+		$html = '';
+
+		if ( isset( $themes_update->response[ $stylesheet ] ) ) {
+			$update         = $themes_update->response[ $stylesheet ];
+			$theme_name     = $theme->display( 'Name' );
+			$details_url    = add_query_arg( array(
+				'TB_iframe' => 'true',
+				'width'     => 1024,
+				'height'    => 800
+			), $update['url'] ); //Theme browser inside WP? replace this, Also, theme preview JS will override this on the available list.
+
+			if ( ! is_multisite() ) {
+				$html = sprintf( '<p><strong>' . __( 'There is a new version of %1$s available. <a href="%2$s" class="thickbox" title="%3$s">View version %4$s details</a>.' ) . '</strong></p>',
+					$theme_name, esc_url( $details_url ), esc_attr( $theme['Name'] ), $update['new_version'] );
+			}
+		}
+
+		return $html;
 	}
 
 
@@ -229,6 +272,7 @@ class Is_Version_Controlled {
 	 * @see wp_plugin_update_row()
 	 *
 	 * @since 0.1.0
+	 *
 	 * @param $file
 	 * @param $plugin_data
 	 *
@@ -287,6 +331,7 @@ class Is_Version_Controlled {
 		$private = $private ? 'private_' : false;
 
 		$plugins = apply_filters( "ivc_{$private}plugins", array() );
+
 		return array_unique( $plugins );
 	}
 
@@ -302,6 +347,7 @@ class Is_Version_Controlled {
 		$private = $private ? 'private_' : false;
 
 		$themes = apply_filters( "ivc_{$private}themes", array() );
+
 		return array_unique( $themes ); // No duplicates
 	}
 
@@ -391,6 +437,7 @@ class Is_Version_Controlled {
 	 * Removes plugins form the http request array.
 	 *
 	 * @since 0.1.0
+	 *
 	 * @param $request
 	 *
 	 * @return mixed
@@ -419,6 +466,7 @@ class Is_Version_Controlled {
 	 * Removes themes from the http request array.
 	 *
 	 * @since 0.1.0
+	 *
 	 * @param $request
 	 *
 	 * @return mixed
@@ -452,6 +500,7 @@ class Is_Version_Controlled {
 	 * Grabs the decoded plugins data
 	 *
 	 * @since 0.1.0
+	 *
 	 * @param $request
 	 *
 	 * @return bool|object False on failure, plugins object otherwise
@@ -470,6 +519,7 @@ class Is_Version_Controlled {
 	 * Grabs the decoded themes data
 	 *
 	 * @since 0.1.0
+	 *
 	 * @param $request
 	 *
 	 * @return bool|object False on failure, plugins object otherwise
@@ -488,6 +538,7 @@ class Is_Version_Controlled {
 	 * Checks if the URL provided is to plugin updates
 	 *
 	 * @since 0.1.0
+	 *
 	 * @param $url
 	 *
 	 * @return bool
@@ -500,6 +551,7 @@ class Is_Version_Controlled {
 	 * Checks if the URL is to theme updates.
 	 *
 	 * @since 0.1.0
+	 *
 	 * @param $url
 	 *
 	 * @return bool
@@ -546,12 +598,16 @@ function overwrite_message( $message, $plugin_file, $plugin_data ) {
 
 function remove_akismet( $filters ) {
 	$filters[] = 'akismet/akismet.php';
+
 	return $filters;
 }
+
 add_filter( 'ivc_plugins', 'remove_akismet' );
 
 function remove_twentyfifteen( $filters ) {
 	$filters[] = 'twentyfifteen';
+
 	return $filters;
 }
+
 add_filter( 'ivc_themes', 'remove_twentyfifteen' );
