@@ -634,7 +634,7 @@ function remove_akismet( $filters ) {
 	return $filters;
 }
 
-add_filter( 'ivc_plugins', 'remove_akismet' );
+//add_filter( 'ivc_plugins', 'remove_akismet' );
 
 function remove_twentyfifteen( $filters ) {
 	$filters[] = 'twentyfifteen';
@@ -642,4 +642,4 @@ function remove_twentyfifteen( $filters ) {
 	return $filters;
 }
 
-add_filter( 'ivc_themes', 'remove_twentyfifteen' );
+//add_filter( 'ivc_themes', 'remove_twentyfifteen' );
