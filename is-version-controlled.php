@@ -49,6 +49,39 @@ class Is_Version_Controlled {
 		add_filter( 'plugins_api_result', array( $this, 'remove_plugin_update_button' ), 10, 3 );
 		add_filter( 'wp_prepare_themes_for_js', array( $this, 'override_theme_update_notification' ) );
 		add_filter( 'site_transient_update_plugins', array( $this, 'remove_plugins_from_transient' ) );
+		add_filter( 'site_transient_update_themes', array( $this, 'remove_themes_from_transient' ) );
+	}
+
+	/**
+	 * Remove themes from transient on update-core screen
+	 *
+	 * @param $transient
+	 *
+	 * @return mixed
+	 */
+	public function remove_themes_from_transient( $transient ) {
+		$screen = get_current_screen();
+		if ( ! isset( $screen->base ) || 'update-core' !== $screen->base || ! isset( $transient->response ) ) {
+			return $transient;
+		}
+
+		$private_themes = $this->get_themes( 'private' );
+		$themes         = $this->get_themes();
+		if ( ! empty( $private_themes ) ) {
+			$plugins = array_merge( $private_themes, $themes );
+
+		}
+
+		$response = $transient->response;
+		foreach ( $response as $file_path => $plugin_data ) {
+			if ( in_array( $file_path, $themes ) ) {
+				unset( $response[ $file_path ] );
+			}
+		}
+
+		$transient->response = $response;
+
+		return $transient;
 	}
 
 	/**
@@ -217,9 +250,9 @@ class Is_Version_Controlled {
 		$html = '';
 
 		if ( isset( $themes_update->response[ $stylesheet ] ) ) {
-			$update         = $themes_update->response[ $stylesheet ];
-			$theme_name     = $theme->display( 'Name' );
-			$details_url    = add_query_arg( array(
+			$update      = $themes_update->response[ $stylesheet ];
+			$theme_name  = $theme->display( 'Name' );
+			$details_url = add_query_arg( array(
 				'TB_iframe' => 'true',
 				'width'     => 1024,
 				'height'    => 800,
