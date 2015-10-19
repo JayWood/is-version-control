@@ -55,6 +55,10 @@ add_filter( 'ivc_message_string', 'overwrite_message', 10, 3 );
 ## Screenshots
 ![Is Version Control](https://raw.githubusercontent.com/JayWood/is-version-control/master/screenshot.png)
 
+## TODO
+* Remove download button from theme update details link.
+* More?
+
 ## Changelog
 
 ### 0.1.1
