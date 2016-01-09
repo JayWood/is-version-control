@@ -60,6 +60,10 @@ class Is_Version_Controlled {
 	 * @return mixed
 	 */
 	public function remove_themes_from_transient( $transient ) {
+		if ( ! function_exists( 'get_current_screen' ) ) {
+			return $transient;
+		}
+
 		$screen = get_current_screen();
 		if ( ! isset( $screen->base ) || 'update-core' !== $screen->base || ! isset( $transient->response ) ) {
 			return $transient;
